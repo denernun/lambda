@@ -1,5 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+import { HttpMethod } from 'aws-cdk-lib/aws-events';
 import * as lambdaNodejs from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import { Construct } from 'constructs';
@@ -38,8 +39,16 @@ export class ApiStack extends cdk.Stack {
     });
 
     const helloIntegration = new apigateway.LambdaIntegration(props.helloHandler);
+
+    // hello
     const helloResource = api.root.addResource('hello');
-    helloResource.addMethod('GET', helloIntegration);
-    helloResource.addMethod('POST', helloIntegration);
+    helloResource.addMethod(HttpMethod.GET, helloIntegration);
+    helloResource.addMethod(HttpMethod.POST, helloIntegration);
+
+    // hello/{id}
+    const helloIdResource = helloResource.addResource('{id}');
+    helloIdResource.addMethod(HttpMethod.GET, helloIntegration);
+    helloIdResource.addMethod(HttpMethod.PUT, helloIntegration);
+    helloIdResource.addMethod(HttpMethod.DELETE, helloIntegration);
   }
 }
