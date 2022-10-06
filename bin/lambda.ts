@@ -5,5 +5,5 @@ import { LambdaStack } from '../lib/lambda-stack';
 
 const app = new cdk.App();
 new LambdaStack(app, 'LambdaStack', {
-  // env: { account: '295754215784', region: 'sa-east-1' },
+  env: { account: '295754215784', region: 'sa-east-1' },
 });
