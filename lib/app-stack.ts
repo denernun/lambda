@@ -34,6 +34,7 @@ export class AppStack extends cdk.Stack {
         sourceMap: false,
       },
     });
+    // this.statusHandler.logGroup.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
 
     this.helloHandler = new lambdaNodejs.NodejsFunction(this, 'HelloFunction', {
       functionName: 'HelloFunction',
@@ -49,6 +50,7 @@ export class AppStack extends cdk.Stack {
         TABLE_NAME: this.helloDb.tableName,
       },
     });
+    // this.helloHandler.logGroup.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
     this.helloDb.grantReadWriteData(this.helloHandler);
   }
 }

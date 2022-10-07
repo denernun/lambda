@@ -14,17 +14,19 @@ export class ApiStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: ApiProps) {
     super(scope, id, props);
 
-    const logGroup = new logs.LogGroup(this, 'LogGroup', {
-      logGroupName: '/aws/lambda/HelloFunction',
-      retention: logs.RetentionDays.ONE_MONTH,
-    });
+    // STATUS
 
-    const api = new apigateway.RestApi(this, 'HelloApi', {
-      restApiName: 'HelloApi',
-      description: 'This service serves a hello world message.',
+    const logStatus = new logs.LogGroup(this, 'LogStatus', {
+      logGroupName: `/aws/lambda/StatusFunction/${new Date().getTime()}`,
+      retention: logs.RetentionDays.ONE_DAY,
+    });
+    logStatus.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
+
+    const apiStatus = new apigateway.RestApi(this, 'StatusApi', {
+      restApiName: 'Status Api',
       cloudWatchRole: true,
       deployOptions: {
-        accessLogDestination: new apigateway.LogGroupLogDestination(logGroup),
+        accessLogDestination: new apigateway.LogGroupLogDestination(logStatus),
         accessLogFormat: apigateway.AccessLogFormat.jsonWithStandardFields({
           httpMethod: true,
           ip: true,
@@ -41,17 +43,41 @@ export class ApiStack extends cdk.Stack {
 
     // status
     const statusIntegration = new apigateway.LambdaIntegration(props.statusHandler);
-
-    const statusResource = api.root.addResource('status');
+    const statusResource = apiStatus.root.addResource('status');
     statusResource.addMethod(HttpMethod.GET, statusIntegration);
+
+    // HELLO
+
+    const logHello = new logs.LogGroup(this, 'LogHello', {
+      logGroupName: `/aws/lambda/HelloFunction/${new Date().getTime()}`,
+      retention: logs.RetentionDays.ONE_DAY,
+    });
+    logHello.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
+
+    const apiHello = new apigateway.RestApi(this, 'HelloApi', {
+      restApiName: 'Hello Api',
+      cloudWatchRole: true,
+      deployOptions: {
+        accessLogDestination: new apigateway.LogGroupLogDestination(logHello),
+        accessLogFormat: apigateway.AccessLogFormat.jsonWithStandardFields({
+          httpMethod: true,
+          ip: true,
+          protocol: true,
+          requestTime: true,
+          resourcePath: true,
+          responseLength: true,
+          status: true,
+          caller: true,
+          user: true,
+        }),
+      },
+    });
 
     // hello
     const helloIntegration = new apigateway.LambdaIntegration(props.helloHandler);
-
-    const helloResource = api.root.addResource('hello');
+    const helloResource = apiHello.root.addResource('hello');
     helloResource.addMethod(HttpMethod.GET, helloIntegration);
     helloResource.addMethod(HttpMethod.POST, helloIntegration);
-
     const helloIdResource = helloResource.addResource('{id}');
     helloIdResource.addMethod(HttpMethod.GET, helloIntegration);
     helloIdResource.addMethod(HttpMethod.PUT, helloIntegration);
