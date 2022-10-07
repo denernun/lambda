@@ -7,6 +7,7 @@ import { Construct } from 'constructs';
 
 interface ApiProps extends cdk.AppProps {
   readonly helloHandler: lambdaNodejs.NodejsFunction;
+  readonly statusHandler: lambdaNodejs.NodejsFunction;
 }
 
 export class ApiStack extends cdk.Stack {
@@ -38,14 +39,19 @@ export class ApiStack extends cdk.Stack {
       },
     });
 
-    const helloIntegration = new apigateway.LambdaIntegration(props.helloHandler);
+    // status
+    const statusIntegration = new apigateway.LambdaIntegration(props.statusHandler);
+
+    const statusResource = api.root.addResource('status');
+    statusResource.addMethod(HttpMethod.GET, statusIntegration);
 
     // hello
+    const helloIntegration = new apigateway.LambdaIntegration(props.helloHandler);
+
     const helloResource = api.root.addResource('hello');
     helloResource.addMethod(HttpMethod.GET, helloIntegration);
     helloResource.addMethod(HttpMethod.POST, helloIntegration);
 
-    // hello/{id}
     const helloIdResource = helloResource.addResource('{id}');
     helloIdResource.addMethod(HttpMethod.GET, helloIntegration);
     helloIdResource.addMethod(HttpMethod.PUT, helloIntegration);

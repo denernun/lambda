@@ -4,6 +4,7 @@ import * as lambdaNodejs from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
 
 export class AppStack extends cdk.Stack {
+  readonly statusHandler: cdk.aws_lambda_nodejs.NodejsFunction;
   readonly helloHandler: cdk.aws_lambda_nodejs.NodejsFunction;
   readonly helloDb: dynadb.Table;
 
@@ -20,6 +21,18 @@ export class AppStack extends cdk.Stack {
       billingMode: dynadb.BillingMode.PROVISIONED,
       readCapacity: 1,
       writeCapacity: 1,
+    });
+
+    this.statusHandler = new lambdaNodejs.NodejsFunction(this, 'StatusFunction', {
+      functionName: 'StatusFunction',
+      entry: 'lambda/status.ts',
+      handler: 'handler',
+      memorySize: 128,
+      timeout: cdk.Duration.seconds(5),
+      bundling: {
+        minify: true,
+        sourceMap: false,
+      },
     });
 
     this.helloHandler = new lambdaNodejs.NodejsFunction(this, 'HelloFunction', {
