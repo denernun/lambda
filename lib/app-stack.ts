@@ -1,15 +1,31 @@
 import * as cdk from 'aws-cdk-lib';
 import * as dynadb from 'aws-cdk-lib/aws-dynamodb';
 import * as lambdaNodejs from 'aws-cdk-lib/aws-lambda-nodejs';
+import * as secret from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 
 export class AppStack extends cdk.Stack {
+  readonly secret: secret.Secret;
+  readonly helloDb: dynadb.Table;
   readonly statusHandler: cdk.aws_lambda_nodejs.NodejsFunction;
   readonly helloHandler: cdk.aws_lambda_nodejs.NodejsFunction;
-  readonly helloDb: dynadb.Table;
 
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+
+    this.secret = new secret.Secret(this, 'HelloSecret', {
+      secretName: 'hello',
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      generateSecretString: {
+        secretStringTemplate: JSON.stringify({ username: 'admin' }),
+        generateStringKey: 'password',
+        excludePunctuation: true,
+        includeSpace: false,
+        passwordLength: 20,
+      },
+    });
+    console.log(this.secret.secretValueFromJson('username').toString());
+    console.log(this.secret.secretValueFromJson('password').toString());
 
     this.helloDb = new dynadb.Table(this, 'HelloDb', {
       tableName: 'hello',
