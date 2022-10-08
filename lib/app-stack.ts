@@ -17,15 +17,16 @@ export class AppStack extends cdk.Stack {
       secretName: 'hello',
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       generateSecretString: {
-        secretStringTemplate: JSON.stringify({ username: 'admin' }),
+        secretStringTemplate: JSON.stringify({
+          environment: 'production',
+          username: 'admin',
+        }),
         generateStringKey: 'password',
         excludePunctuation: true,
         includeSpace: false,
         passwordLength: 20,
       },
     });
-    console.log(this.secret.secretValueFromJson('username').toString());
-    console.log(this.secret.secretValueFromJson('password').toString());
 
     this.helloDb = new dynadb.Table(this, 'HelloDb', {
       tableName: 'hello',
