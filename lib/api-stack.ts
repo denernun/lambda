@@ -7,46 +7,11 @@ import { Construct } from 'constructs';
 
 interface ApiProps extends cdk.AppProps {
   readonly helloHandler: lambdaNodejs.NodejsFunction;
-  readonly statusHandler: lambdaNodejs.NodejsFunction;
 }
 
 export class ApiStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: ApiProps) {
     super(scope, id, props);
-
-    // STATUS
-
-    const logStatus = new logs.LogGroup(this, 'LogStatus', {
-      logGroupName: `/aws/lambda/StatusFunction/${new Date().getTime()}`,
-      retention: logs.RetentionDays.ONE_DAY,
-    });
-    logStatus.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
-
-    const apiStatus = new apigateway.RestApi(this, 'StatusApi', {
-      restApiName: 'Status Api',
-      cloudWatchRole: true,
-      deployOptions: {
-        accessLogDestination: new apigateway.LogGroupLogDestination(logStatus),
-        accessLogFormat: apigateway.AccessLogFormat.jsonWithStandardFields({
-          httpMethod: true,
-          ip: true,
-          protocol: true,
-          requestTime: true,
-          resourcePath: true,
-          responseLength: true,
-          status: true,
-          caller: true,
-          user: true,
-        }),
-      },
-    });
-
-    // status
-    const statusIntegration = new apigateway.LambdaIntegration(props.statusHandler);
-    const statusResource = apiStatus.root.addResource('status');
-    statusResource.addMethod(HttpMethod.GET, statusIntegration);
-
-    // HELLO
 
     const logHello = new logs.LogGroup(this, 'LogHello', {
       logGroupName: `/aws/lambda/HelloFunction/${new Date().getTime()}`,
@@ -73,8 +38,13 @@ export class ApiStack extends cdk.Stack {
       },
     });
 
-    // hello
     const helloIntegration = new apigateway.LambdaIntegration(props.helloHandler);
+
+    // status
+    const statusResource = apiHello.root.addResource('status');
+    statusResource.addMethod(HttpMethod.GET, helloIntegration);
+
+    // hello
     const helloResource = apiHello.root.addResource('hello');
     helloResource.addMethod(HttpMethod.GET, helloIntegration);
     helloResource.addMethod(HttpMethod.POST, helloIntegration);

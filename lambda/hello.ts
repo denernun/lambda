@@ -8,6 +8,18 @@ export async function handler(event: APIGatewayProxyEvent, context: Context): Pr
   console.log(`API Request ID: ${apiRequestId} - Lambda Request ID: ${lambdaRequestId}`);
 
   try {
+    if (event.resource === '/status') {
+      if (event.httpMethod === HttpMethod.GET) {
+        console.log('GET /status');
+        await Promise.resolve(1);
+        return {
+          statusCode: 200,
+          body: JSON.stringify({
+            message: 'GET /status',
+          }),
+        };
+      }
+    }
     if (event.resource === '/hello') {
       if (event.httpMethod === HttpMethod.GET) {
         console.log('GET /hello');

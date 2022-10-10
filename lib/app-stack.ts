@@ -7,7 +7,6 @@ import { Construct } from 'constructs';
 export class AppStack extends cdk.Stack {
   readonly secret: secret.Secret;
   readonly helloDb: dynadb.Table;
-  readonly statusHandler: cdk.aws_lambda_nodejs.NodejsFunction;
   readonly helloHandler: cdk.aws_lambda_nodejs.NodejsFunction;
 
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -40,19 +39,6 @@ export class AppStack extends cdk.Stack {
       writeCapacity: 1,
     });
 
-    this.statusHandler = new lambdaNodejs.NodejsFunction(this, 'StatusFunction', {
-      functionName: 'StatusFunction',
-      entry: 'lambda/status.ts',
-      handler: 'handler',
-      memorySize: 128,
-      timeout: cdk.Duration.seconds(5),
-      bundling: {
-        minify: true,
-        sourceMap: false,
-      },
-    });
-    // this.statusHandler.logGroup.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
-
     this.helloHandler = new lambdaNodejs.NodejsFunction(this, 'HelloFunction', {
       functionName: 'HelloFunction',
       entry: 'lambda/hello.ts',
@@ -67,7 +53,6 @@ export class AppStack extends cdk.Stack {
         TABLE_NAME: this.helloDb.tableName,
       },
     });
-    // this.helloHandler.logGroup.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
     this.helloDb.grantReadWriteData(this.helloHandler);
   }
 }

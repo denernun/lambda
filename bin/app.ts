@@ -11,16 +11,11 @@ const env: cdk.Environment = {
   region: 'sa-east-1',
 };
 
-// StatusAppStack
-// HelloAppStack
 const appStack = new AppStack(app, 'AppStack', {
   env,
 });
 
-// StatusApiStack
-// HelloApiStack
 const apiStack = new ApiStack(app, 'ApiStack', {
-  statusHandler: appStack.statusHandler,
   helloHandler: appStack.helloHandler,
 });
 
